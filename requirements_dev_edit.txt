@@ -1,0 +1,2 @@
+-r requirements_dev.txt
+black==19.3b0
