@@ -50,6 +50,9 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr htmlcov/
 	rm -fr .pytest_cache
 
+fmt: ## formats code with black
+	black deep_release_notes tests setup.py
+
 lint: ## check style with flake8
 	flake8 deep_release_notes tests
 
