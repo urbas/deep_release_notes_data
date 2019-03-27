@@ -4,7 +4,7 @@
   "[python]": {
     "editor.tabSize": 4
   },
-  "python.linting.pylintEnabled": true,
+  "python.linting.pylintEnabled": false,
   "python.formatting.provider": "black",
   "files.exclude": {
     "**/__pycache__": true,
@@ -15,5 +15,6 @@
     "**/__pycache__": true,
     "**/*.egg-info": true,
     "**/.venv": true
-  }
+  },
+  "python.linting.flake8Enabled": true
 }
