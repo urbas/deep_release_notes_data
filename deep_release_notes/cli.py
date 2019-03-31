@@ -12,10 +12,13 @@ from time import sleep
 
 
 @click.group()
-def main():
+@click.option('-v', '--verbose', count=True)
+@click.option('-q', '--quiet', count=True)
+def main(verbose, quiet):
+    log_level = min(max(logging.DEBUG, logging.WARNING - verbose*10 + quiet*10), logging.CRITICAL)
     logging.basicConfig(
         format="[%(levelname)s %(asctime)s|%(filename)s:%(lineno)d] %(message)s",
-        level=logging.INFO,
+        level=log_level,
     )
 
 
@@ -24,11 +27,35 @@ def get_projects():
     get_projects_since()
 
 
+@main.command(name="find-all")
+def find_all():
+    all_search_criteria = [
+        {"file_name": "RELEASENOTES.md", "size": 6000},
+        {"file_name": "RELEASE_NOTES.md", "size": 6000},
+        {"file_name": "RELEASENOTES.rst", "size": 6000},
+        {"file_name": "RELEASE_NOTES.rst", "size": 6000},
+        {"file_name": "CHANGELOG.md", "size": 6000},
+        {"file_name": "CHANGE_LOG.md", "size": 6000},
+        {"file_name": "CHANGELOG.rst", "size": 6000},
+        {"file_name": "CHANGE_LOG.rst", "size": 6000},
+        {"file_name": "NEWS.md", "size": 6000},
+        {"file_name": "NEWS.rst", "size": 6000},
+    ]
+    for search_criterion in all_search_criteria:
+        find_release_notes(
+            file_name=search_criterion["file_name"], size=search_criterion["size"]
+        )
+
+
 @main.command(name="find")
 @click.argument("file_name")
 @click.option("--size", default=5900)
 @click.option("--output-dir", default=None)
 def find(file_name, size, output_dir):
+    find_release_notes(file_name, size, output_dir)
+
+
+def find_release_notes(file_name, size=5900, output_dir=None):
     out_dir = Path(output_dir) if output_dir else Path(f"{file_name}.size_{size}")
     out_dir.mkdir(parents=True, exist_ok=True)
     logging.info(
@@ -42,7 +69,7 @@ def find(file_name, size, output_dir):
     downloaded_files = get_files_in_dir(out_dir)
     next_page = (find_last_page(downloaded_files) or 0) + 1
     while True:
-        logging.info("Finding %s file. Page %s...", file_name, next_page)
+        logging.debug("Finding %s file. Page %s...", file_name, next_page)
         response = github_find_file_in_repos(http_session, file_name, size, next_page)
         if should_retry(response):
             wait_before_retry(response)
@@ -50,10 +77,14 @@ def find(file_name, size, output_dir):
             # It looks like we have to reset the session after we get rate limited
             http_session = get_github_session()
             continue
+        elif response.status_code == 422:
+            # It looks like this error code is used when the page number exceeds last... so let's break here.
+            logging.info("Looks like we went past the last page. Stopping.")
+            break
         else:
             response.raise_for_status()
         num_of_results = len(response.json()["items"])
-        logging.info(
+        logging.debug(
             "Found %s %s files on page %s.", num_of_results, file_name, next_page
         )
         if num_of_results > 0:
@@ -61,11 +92,11 @@ def find(file_name, size, output_dir):
         next_page = get_next_page(response.headers)
 
         if next_page is None:
-            logging.info("Finished...")
+            logging.info("Finished.")
             break
 
         pause = 5
-        logging.info("Sleeping for %s seconds to avoid being rate-limited.", pause)
+        logging.debug("Sleeping for %s seconds to avoid being rate-limited.", pause)
         sleep(pause)
 
 
@@ -148,6 +179,7 @@ def write_page_file(prefix, page, json_str):
     logging.info("Storing page file %s...", output_file)
     with open(output_file, "w") as projects_file:
         projects_file.write(json_str)
+        click.echo(output_file)
 
 
 def find_latest_project_id(projects_files):
@@ -178,11 +210,14 @@ def find_last_page(downloaded_files):
 
 def get_next_page(response_headers):
     link_header = response_headers.get("Link")
+    logging.debug("Got link header: %s", link_header)
     if link_header is None:
         return None
-    match = re.search(r"&page=(\d+)>; rel=\"next\"", link_header)
+    match = re.search(r"page=(\d+)[^>]*?>; rel=\"next\"", link_header)
     if match is None:
+        logging.debug("Could not find the next page...")
         return None
+    logging.debug("Found next page: %s", match.group(1))
     return int(match.group(1))
 
 
