@@ -26,48 +26,73 @@ def get_projects():
 
 @main.command(name="find")
 @click.argument("file_name")
-def find(file_name):
+@click.option("--size", default=5900)
+@click.option("--output-dir", default=None)
+def find(file_name, size, output_dir):
+    out_dir = Path(output_dir) if output_dir else Path(f"{file_name}.size_{size}")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    logging.info(
+        "Looking for repositories with %s of size > %s. Storing results into %s.",
+        file_name,
+        size,
+        str(out_dir),
+    )
+
     http_session = get_github_session()
-    downloaded_files = get_files_in_cur_dir()
+    downloaded_files = get_files_in_dir(out_dir)
     next_page = (find_last_page(downloaded_files) or 0) + 1
     while True:
         logging.info("Finding %s file. Page %s...", file_name, next_page)
-        response = github_find_file_in_repos(http_session, file_name, next_page)
-        if response.status_code == 403 and "Retry-After" in response.headers:
-            retry_after = int(response.headers["Retry-After"])
-            logging.info("Reached rate limit. Waiting for %s seconds.", retry_after)
-            sleep(retry_after)
+        response = github_find_file_in_repos(http_session, file_name, size, next_page)
+        if should_retry(response):
+            wait_before_retry(response)
             logging.info("Retrying now...")
             # It looks like we have to reset the session after we get rate limited
             http_session = get_github_session()
             continue
         else:
             response.raise_for_status()
-        write_page_file(file_name, next_page, response.text)
+        num_of_results = len(response.json()["items"])
         logging.info(
-            "Found %s %s files on page %s.",
-            len(response.json()["items"]),
-            file_name,
-            next_page,
+            "Found %s %s files on page %s.", num_of_results, file_name, next_page
         )
+        if num_of_results > 0:
+            write_page_file(out_dir.joinpath(file_name), next_page, response.text)
         next_page = get_next_page(response.headers)
-        pause = get_request_pause(response.headers)
-        if pause:
-            pause += 0.5
-            logging.info("Sleeping for %s seconds to avoid being rate-limited.", pause)
-            sleep(pause)
+
+        if next_page is None:
+            logging.info("Finished...")
+            break
+
+        pause = 5
+        logging.info("Sleeping for %s seconds to avoid being rate-limited.", pause)
+        sleep(pause)
 
 
-def github_find_file_in_repos(http_session, file_name, page):
+def wait_before_retry(response):
+    retry_after = int(response.headers["Retry-After"])
+    logging.info("Reached rate limit. Waiting for %s seconds.", retry_after)
+    sleep(retry_after)
+
+
+def should_retry(response):
+    return response.status_code == 403 and "Retry-After" in response.headers
+
+
+def github_find_file_in_repos(http_session, file_name, size, page):
     return http_session.get(
         "https://api.github.com/search/code",
-        params={"q": f"{file_name} in:path path:/", "page": page},
+        params={
+            "q": f"{file_name} in:path path:/ size:>{size}",
+            "page": page,
+            "sort": "indexed",
+        },
     )
 
 
 def get_projects_since():
     http_session = get_github_session()
-    downloaded_files = get_files_in_cur_dir()
+    downloaded_files = get_files_in_dir()
     since_id = find_latest_project_id(downloaded_files) or 0
     while True:
         logging.info("Downloading projects since ID %s...", since_id)
@@ -82,8 +107,9 @@ def get_projects_since():
         wait_if_close_to_rate_limit(response, 0.10)
 
 
-def get_files_in_cur_dir():
-    return [str(f) for f in Path().iterdir() if f.is_file()]
+def get_files_in_dir(dir=None):
+    dir = dir if dir else Path()
+    return [str(f) for f in dir.iterdir() if f.is_file()]
 
 
 def wait_if_close_to_rate_limit(response, closeness_ratio):
@@ -118,7 +144,9 @@ def write_projects_file(since_id, until_id, project_list_json_str):
 
 
 def write_page_file(prefix, page, json_str):
-    with open(f"{prefix}-{page}.json", "w") as projects_file:
+    output_file = f"{prefix}-{page}.json"
+    logging.info("Storing page file %s...", output_file)
+    with open(output_file, "w") as projects_file:
         projects_file.write(json_str)
 
 
@@ -159,12 +187,18 @@ def get_next_page(response_headers):
 
 
 def get_request_pause(response_headers, response_timestamp=None):
-    response_timestamp = int(datetime.utcnow().timestamp()) if response_timestamp is None else response_timestamp
+    response_timestamp = (
+        int(datetime.utcnow().timestamp())
+        if response_timestamp is None
+        else response_timestamp
+    )
     rate_remaining = response_headers.get("X-RateLimit-Remaining")
     rate_reset_timestamp = response_headers.get("X-RateLimit-Reset")
     if not rate_remaining or not rate_reset_timestamp:
         return None
-    return (float(rate_reset_timestamp) - float(response_timestamp)) / float(rate_remaining)
+    return (float(rate_reset_timestamp) - float(response_timestamp)) / float(
+        rate_remaining
+    )
 
 
 if __name__ == "__main__":
