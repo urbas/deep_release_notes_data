@@ -5,33 +5,10 @@
 from datetime import datetime
 
 from deep_release_notes.cli import (
-    find_latest_project_id,
     get_next_page,
-    find_last_page,
+    find_last_downloaded_page,
     get_request_pause,
 )
-
-
-def test_find_latest_project_id_none():
-    latest_project_id = find_latest_project_id(())
-    assert latest_project_id is None
-
-
-def test_find_latest_project_id_one():
-    latest_project_id = find_latest_project_id(["projects-0-123.json"])
-    assert latest_project_id == 123
-
-
-def test_find_latest_project_id():
-    latest_project_id = find_latest_project_id(
-        ["projects-0-123.json", "projects-234-345.json", "projects-123-234.json"]
-    )
-    assert latest_project_id == 345
-
-
-def test_find_latest_project_id_incorrect():
-    latest_project_id = find_latest_project_id(["projects--123.json"])
-    assert latest_project_id is None
 
 
 def test_get_next_page_none():
@@ -72,19 +49,21 @@ def test_get_next_page_wrong():
 
 
 def test_find_last_page_none():
-    assert find_last_page(()) is None
+    assert find_last_downloaded_page(()) is None
 
 
 def test_find_last_incorrect():
-    assert find_last_page(["dfhdj"]) is None
+    assert find_last_downloaded_page(["dfhdj"]) is None
 
 
 def test_find_last_page_one():
-    assert find_last_page(["foo-123.json"]) == 123
+    assert find_last_downloaded_page(["foo-123.json"]) == 123
 
 
 def test_find_last_page():
-    assert find_last_page(["foo-123.json", "mar-872.json", "boo-8.json"]) == 872
+    assert (
+        find_last_downloaded_page(["foo-123.json", "mar-872.json", "boo-8.json"]) == 872
+    )
 
 
 def test_get_request_pause_none():

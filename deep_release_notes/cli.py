@@ -12,19 +12,17 @@ from time import sleep
 
 
 @click.group()
-@click.option('-v', '--verbose', count=True)
-@click.option('-q', '--quiet', count=True)
+@click.option("-v", "--verbose", count=True)
+@click.option("-q", "--quiet", count=True)
 def main(verbose, quiet):
-    log_level = min(max(logging.DEBUG, logging.WARNING - verbose*10 + quiet*10), logging.CRITICAL)
+    log_level = min(
+        max(logging.DEBUG, logging.WARNING - verbose * 10 + quiet * 10),
+        logging.CRITICAL,
+    )
     logging.basicConfig(
         format="[%(levelname)s %(asctime)s|%(filename)s:%(lineno)d] %(message)s",
         level=log_level,
     )
-
-
-@main.command(name="get-projects")
-def get_projects():
-    get_projects_since()
 
 
 @main.command(name="find-all")
@@ -67,7 +65,7 @@ def find_release_notes(file_name, size=5900, output_dir=None):
 
     http_session = get_github_session()
     downloaded_files = get_files_in_dir(out_dir)
-    next_page = (find_last_page(downloaded_files) or 0) + 1
+    next_page = (find_last_downloaded_page(downloaded_files) or 0) + 1
     while True:
         logging.debug("Finding %s file. Page %s...", file_name, next_page)
         response = github_find_file_in_repos(http_session, file_name, size, next_page)
@@ -83,6 +81,7 @@ def find_release_notes(file_name, size=5900, output_dir=None):
             break
         else:
             response.raise_for_status()
+
         num_of_results = len(response.json()["items"])
         logging.debug(
             "Found %s %s files on page %s.", num_of_results, file_name, next_page
@@ -95,7 +94,7 @@ def find_release_notes(file_name, size=5900, output_dir=None):
             logging.info("Finished.")
             break
 
-        pause = 5
+        pause = get_request_pause(response.headers)
         logging.debug("Sleeping for %s seconds to avoid being rate-limited.", pause)
         sleep(pause)
 
@@ -119,23 +118,6 @@ def github_find_file_in_repos(http_session, file_name, size, page):
             "sort": "indexed",
         },
     )
-
-
-def get_projects_since():
-    http_session = get_github_session()
-    downloaded_files = get_files_in_dir()
-    since_id = find_latest_project_id(downloaded_files) or 0
-    while True:
-        logging.info("Downloading projects since ID %s...", since_id)
-        response = http_session.get(
-            "https://api.github.com/repositories", params={"since": since_id}
-        )
-        response.raise_for_status()
-        until_id = response.json()[-1]["id"]
-        write_projects_file(since_id, until_id, response.text)
-        logging.info("Downloaded projects since ID %s until ID %s.", since_id, until_id)
-        since_id = until_id
-        wait_if_close_to_rate_limit(response, 0.10)
 
 
 def get_files_in_dir(dir=None):
@@ -168,12 +150,6 @@ def get_github_session():
     return session
 
 
-def write_projects_file(since_id, until_id, project_list_json_str):
-    projects_file_name = f"projects-{since_id}-{until_id}.json"
-    with open(projects_file_name, "w") as projects_file:
-        projects_file.write(project_list_json_str)
-
-
 def write_page_file(prefix, page, json_str):
     output_file = f"{prefix}-{page}.json"
     logging.info("Storing page file %s...", output_file)
@@ -182,19 +158,7 @@ def write_page_file(prefix, page, json_str):
         click.echo(output_file)
 
 
-def find_latest_project_id(projects_files):
-    if not projects_files:
-        return None
-    pattern = re.compile(r"projects-\d+-(?P<until_id>\d+).json")
-    until_ids = [
-        int(m.group("until_id"))
-        for m in [pattern.match(projects_file) for projects_file in projects_files]
-        if m is not None
-    ]
-    return max(until_ids) if until_ids else None
-
-
-def find_last_page(downloaded_files):
+def find_last_downloaded_page(downloaded_files):
     if not downloaded_files:
         return None
     pattern = re.compile(r"^.*-(?P<page>\d+).json$")
