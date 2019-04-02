@@ -19,7 +19,8 @@ def test_get_next_page_none():
 def test_get_next_page():
     next_page = get_next_page(
         {
-            "Link": '<https://api.github.com/search/code?q=releasenotes.md+in%3Apath+path%3A%2F&page=2>; rel="next", <https://api.github.com/search/code?q=releasenotes.md+in%3Apath+path%3A%2F&page=34>; rel="last"'
+            "Link": '<https://api.github.com/search/code?q=releasenotes.md+in%3Apath+path%3A%2F&page=2>; rel="next", '
+            '<https://api.github.com/search/code?q=releasenotes.md+in%3Apath+path%3A%2F&page=34>; rel="last"'
         }
     )
     assert next_page == 2
@@ -28,7 +29,8 @@ def test_get_next_page():
 def test_get_next_page_first_not_next():
     next_page = get_next_page(
         {
-            "Link": '<https://api.github.com/search/code?q=releasenotes.md+in%3Apath+path%3A%2F&page=2>; rel="blah", <https://api.github.com/search/code?q=releasenotes.md+in%3Apath+path%3A%2F&page=34>; rel="next"'
+            "Link": '<https://api.github.com/search/code?q=releasenotes.md+in%3Apath+path%3A%2F&page=2>; rel="blah", '
+            '<https://api.github.com/search/code?q=releasenotes.md+in%3Apath+path%3A%2F&page=34>; rel="next"'
         }
     )
     assert next_page == 34
@@ -37,7 +39,12 @@ def test_get_next_page_first_not_next():
 def test_get_next_page_params():
     next_page = get_next_page(
         {
-            "Link": '<https://api.github.com/search/code?q=CHANGELOG.rst+in%3Apath+path%3A%2F+size%3A%3E6000&page=2&sort=indexed>; rel="prev", <https://api.github.com/search/code?q=CHANGELOG.rst+in%3Apath+path%3A%2F+size%3A%3E6000&page=4&sort=indexed>; rel="next", <https://api.github.com/search/code?q=CHANGELOG.rst+in%3Apath+path%3A%2F+size%3A%3E6000&page=34&sort=indexed>; rel="last", <https://api.github.com/search/code?q=CHANGELOG.rst+in%3Apath+path%3A%2F+size%3A%3E6000&page=1&sort=indexed>; rel="first"'
+            "Link": '<https://api.github.com/search/code?q=CHANGELOG.rst+in%3Apath+path%3A%2F+size%3A%3E6000&page=2&'
+            'sort=indexed>; rel="prev", <https://api.github.com/search/code?q=CHANGELOG.rst+in%3Apath+path%3A%2F+'
+            'size%3A%3E6000&page=4&sort=indexed>; rel="next", <https://api.github.com/search/code?q=CHANGELOG.rst+'
+            'in%3Apath+path%3A%2F+size%3A%3E6000&page=34&sort=indexed>; rel="last", '
+            '<https://api.github.com/search/code?q=CHANGELOG.rst+in%3Apath+path%3A%2F+size%3A%3E6000&page=1&'
+            'sort=indexed>; rel="first"'
         }
     )
     assert next_page == 4

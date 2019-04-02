@@ -26,39 +26,44 @@ def main(verbose, quiet):
 
 
 @main.command(name="find-all")
-def find_all():
+@click.option("--size", default=6000)
+def find_all(size):
     all_search_criteria = [
-        {"file_name": "RELEASENOTES.md", "size": 6000},
-        {"file_name": "RELEASE_NOTES.md", "size": 6000},
-        {"file_name": "RELEASENOTES.rst", "size": 6000},
-        {"file_name": "RELEASE_NOTES.rst", "size": 6000},
-        {"file_name": "CHANGELOG.md", "size": 6000},
-        {"file_name": "CHANGE_LOG.md", "size": 6000},
-        {"file_name": "CHANGELOG.rst", "size": 6000},
-        {"file_name": "CHANGE_LOG.rst", "size": 6000},
-        {"file_name": "NEWS.md", "size": 6000},
-        {"file_name": "NEWS.rst", "size": 6000},
+        {"file_name": "RELEASENOTES", "extension": "md"},
+        {"file_name": "RELEASE_NOTES", "extension": "md"},
+        {"file_name": "RELEASENOTES", "extension": "rst"},
+        {"file_name": "RELEASE_NOTES", "extension": "rst"},
+        {"file_name": "CHANGELOG", "extension": "md"},
+        {"file_name": "CHANGE_LOG", "extension": "md"},
+        {"file_name": "CHANGELOG", "extension": "rst"},
+        {"file_name": "CHANGE_LOG", "extension": "rst"},
+        {"file_name": "NEWS", "extension": "md"},
+        {"file_name": "NEWS", "extension": "rst"},
     ]
     for search_criterion in all_search_criteria:
         find_release_notes(
-            file_name=search_criterion["file_name"], size=search_criterion["size"]
+            file_name=search_criterion["file_name"],
+            extension=search_criterion["extension"],
+            size=size,
         )
 
 
 @main.command(name="find")
 @click.argument("file_name")
 @click.option("--size", default=5900)
+@click.option("--extension", default="md")
 @click.option("--output-dir", default=None)
-def find(file_name, size, output_dir):
-    find_release_notes(file_name, size, output_dir)
+def find(file_name, extension, size, output_dir):
+    find_release_notes(file_name, extension, size, output_dir)
 
 
-def find_release_notes(file_name, size=5900, output_dir=None):
+def find_release_notes(file_name, extension, size=5900, output_dir=None):
     out_dir = Path(output_dir) if output_dir else Path(f"{file_name}.size_{size}")
     out_dir.mkdir(parents=True, exist_ok=True)
     logging.info(
-        "Looking for repositories with %s of size > %s. Storing results into %s.",
+        "Looking for repositories with %s.%s of size > %s. Storing results into %s.",
         file_name,
+        extension,
         size,
         str(out_dir),
     )
@@ -67,8 +72,13 @@ def find_release_notes(file_name, size=5900, output_dir=None):
     downloaded_files = get_files_in_dir(out_dir)
     next_page = (find_last_downloaded_page(downloaded_files) or 0) + 1
     while True:
-        logging.debug("Finding %s file. Page %s...", file_name, next_page)
-        response = github_find_file_in_repos(http_session, file_name, size, next_page)
+        logging.debug("Finding %s.%s file. Page %s...", file_name, extension, next_page)
+        response = github_find_file_in_repos(
+            http_session, file_name, extension, size, next_page
+        )
+        logging.debug("Got response status: %s", response.status_code)
+        logging.debug("Got response text: %s", response.text)
+        logging.debug("Got response headers: %s", response.headers)
         if should_retry(response):
             wait_before_retry(response)
             logging.info("Retrying now...")
@@ -109,11 +119,11 @@ def should_retry(response):
     return response.status_code == 403 and "Retry-After" in response.headers
 
 
-def github_find_file_in_repos(http_session, file_name, size, page):
+def github_find_file_in_repos(http_session, file_name, extension, size, page):
     return http_session.get(
         "https://api.github.com/search/code",
         params={
-            "q": f"{file_name} in:path path:/ size:>{size}",
+            "q": f"{file_name} in:path path:/ size:>{size} extension:{extension}",
             "page": page,
             "sort": "indexed",
         },
@@ -187,7 +197,7 @@ def get_next_page(response_headers):
 
 def get_request_pause(response_headers, response_timestamp=None):
     response_timestamp = (
-        int(datetime.utcnow().timestamp())
+        int(datetime.now().timestamp())
         if response_timestamp is None
         else response_timestamp
     )
