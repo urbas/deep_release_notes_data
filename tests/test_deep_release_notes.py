@@ -39,11 +39,11 @@ def test_get_next_page_first_not_next():
 def test_get_next_page_params():
     next_page = get_next_page(
         {
-            "Link": '<https://api.github.com/search/code?q=CHANGELOG.rst+in%3Apath+path%3A%2F+size%3A%3E6000&page=2&'
+            "Link": "<https://api.github.com/search/code?q=CHANGELOG.rst+in%3Apath+path%3A%2F+size%3A%3E6000&page=2&"
             'sort=indexed>; rel="prev", <https://api.github.com/search/code?q=CHANGELOG.rst+in%3Apath+path%3A%2F+'
             'size%3A%3E6000&page=4&sort=indexed>; rel="next", <https://api.github.com/search/code?q=CHANGELOG.rst+'
             'in%3Apath+path%3A%2F+size%3A%3E6000&page=34&sort=indexed>; rel="last", '
-            '<https://api.github.com/search/code?q=CHANGELOG.rst+in%3Apath+path%3A%2F+size%3A%3E6000&page=1&'
+            "<https://api.github.com/search/code?q=CHANGELOG.rst+in%3Apath+path%3A%2F+size%3A%3E6000&page=1&"
             'sort=indexed>; rel="first"'
         }
     )

@@ -29,41 +29,32 @@ def main(verbose, quiet):
 @click.option("--size", default=6000)
 def find_all(size):
     all_search_criteria = [
-        {"file_name": "RELEASENOTES", "extension": "md"},
-        {"file_name": "RELEASE_NOTES", "extension": "md"},
-        {"file_name": "RELEASENOTES", "extension": "rst"},
-        {"file_name": "RELEASE_NOTES", "extension": "rst"},
-        {"file_name": "CHANGELOG", "extension": "md"},
-        {"file_name": "CHANGE_LOG", "extension": "md"},
-        {"file_name": "CHANGELOG", "extension": "rst"},
-        {"file_name": "CHANGE_LOG", "extension": "rst"},
-        {"file_name": "NEWS", "extension": "md"},
-        {"file_name": "NEWS", "extension": "rst"},
+        {"file_title": "RELEASENOTES", "extension": "md"},
+        {"file_title": "RELEASE_NOTES", "extension": "md"},
+        {"file_title": "RELEASENOTES", "extension": "rst"},
+        {"file_title": "RELEASE_NOTES", "extension": "rst"},
+        {"file_title": "CHANGELOG", "extension": "md"},
+        {"file_title": "CHANGE_LOG", "extension": "md"},
+        {"file_title": "CHANGELOG", "extension": "rst"},
+        {"file_title": "CHANGE_LOG", "extension": "rst"},
+        {"file_title": "NEWS", "extension": "md"},
+        {"file_title": "NEWS", "extension": "rst"},
     ]
     for search_criterion in all_search_criteria:
         find_release_notes(
-            file_name=search_criterion["file_name"],
+            file_title=search_criterion["file_title"],
             extension=search_criterion["extension"],
             size=size,
         )
 
 
-@main.command(name="find")
-@click.argument("file_name")
-@click.option("--size", default=5900)
-@click.option("--extension", default="md")
-@click.option("--output-dir", default=None)
-def find(file_name, extension, size, output_dir):
-    find_release_notes(file_name, extension, size, output_dir)
-
-
-def find_release_notes(file_name, extension, size=5900, output_dir=None):
+def find_release_notes(file_title, extension, size, output_dir=None):
+    file_name = f"{file_title}.{extension}"
     out_dir = Path(output_dir) if output_dir else Path(f"{file_name}.size_{size}")
     out_dir.mkdir(parents=True, exist_ok=True)
     logging.info(
-        "Looking for repositories with %s.%s of size > %s. Storing results into %s.",
+        "Looking for repositories with %s of size > %s. Storing results into %s.",
         file_name,
-        extension,
         size,
         str(out_dir),
     )
@@ -72,9 +63,9 @@ def find_release_notes(file_name, extension, size=5900, output_dir=None):
     downloaded_files = get_files_in_dir(out_dir)
     next_page = (find_last_downloaded_page(downloaded_files) or 0) + 1
     while True:
-        logging.debug("Finding %s.%s file. Page %s...", file_name, extension, next_page)
+        logging.debug("Finding %s file. Page %s...", file_name, next_page)
         response = github_find_file_in_repos(
-            http_session, file_name, extension, size, next_page
+            http_session, file_title, extension, size, next_page
         )
         logging.debug("Got response status: %s", response.status_code)
         logging.debug("Got response text: %s", response.text)
@@ -120,14 +111,13 @@ def should_retry(response):
 
 
 def github_find_file_in_repos(http_session, file_name, extension, size, page):
-    return http_session.get(
-        "https://api.github.com/search/code",
-        params={
-            "q": f"{file_name} in:path path:/ size:>{size} extension:{extension}",
-            "page": page,
-            "sort": "indexed",
-        },
-    )
+    params = {
+        "q": f"{file_name} in:path path:/ size:>{size} extension:{extension}",
+        "page": page,
+        "sort": "indexed",
+    }
+    logging.debug("Searching for code with parameters: %s", params)
+    return http_session.get("https://api.github.com/search/code", params=params)
 
 
 def get_files_in_dir(dir=None):
