@@ -3,10 +3,12 @@
 """Console script for deep_release_notes."""
 import click
 from datetime import datetime
+import json
 import logging
 from pathlib import Path
 import re
 import requests
+from subprocess import check_call
 import sys
 from time import sleep
 
@@ -23,6 +25,22 @@ def main(verbose, quiet):
         format="[%(levelname)s %(asctime)s|%(filename)s:%(lineno)d] %(message)s",
         level=log_level,
     )
+
+
+@main.command(name="clone-found-repos")
+@click.argument("search_dir")
+@click.argument("clone_dir")
+def clone_found_repos(search_dir, clone_dir):
+    clone_path = Path(clone_dir)
+    clone_path.mkdir(parents=True, exist_ok=True)
+    for (repo, release_notes_path) in get_found_release_notes(search_dir):
+        logging.info("Cloning repository %s...", repo)
+        repo_path = clone_path.joinpath(repo)
+        repo_path.mkdir(parents=True, exist_ok=True)
+        check_call(
+            ["git", "clone", f"git@github.com:{repo}.git", repo_path], cwd=clone_path
+        )
+        logging.info("Repo %s cloned into %s.", repo, repo_path)
 
 
 @main.command(name="find-all")
@@ -46,6 +64,19 @@ def find_all(size):
             extension=search_criterion["extension"],
             size=size,
         )
+
+
+def get_found_release_notes(dir=None):
+    search_dir = Path(dir) if dir else Path()
+    release_note_repos = set()
+    logging.info("Looking for search results in %s", search_dir)
+    for search_results_file in search_dir.glob("*/*/*.json"):
+        with search_results_file.open() as search_results_fh:
+            search_results = json.load(search_results_fh)
+        for search_result in search_results["items"]:
+            repo_info = search_result["repository"]
+            release_note_repos.add((repo_info["full_name"], search_result["path"]))
+    return release_note_repos
 
 
 def find_release_notes(file_title, extension, size, output_dir=None):
