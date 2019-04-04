@@ -33,9 +33,12 @@ def main(verbose, quiet):
 def clone_found_repos(search_dir, clone_dir):
     clone_path = Path(clone_dir)
     clone_path.mkdir(parents=True, exist_ok=True)
-    for (repo, release_notes_path) in get_found_release_notes(search_dir):
-        logging.info("Cloning repository %s...", repo)
+    for (repo, release_notes_path) in sorted(get_found_release_notes(search_dir)):
         repo_path = clone_path.joinpath(repo)
+        if repo_path.joinpath(".git").exists():
+            logging.info("Skipping repository %s...", repo)
+            continue
+        logging.info("Cloning repository %s...", repo)
         repo_path.mkdir(parents=True, exist_ok=True)
         check_call(
             ["git", "clone", f"git@github.com:{repo}.git", repo_path], cwd=clone_path
