@@ -4,7 +4,7 @@ FROM python:${PYTHON_VERSION}-slim
 ENV SRC_DIR=/sources
 WORKDIR ${SRC_DIR}
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install --no-install-recommends -y \
     git \
  && rm -rf /var/lib/apt/lists/*
 
