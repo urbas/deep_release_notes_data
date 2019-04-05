@@ -8,8 +8,10 @@ RUN apt-get update && apt-get install -y \
     git \
  && rm -rf /var/lib/apt/lists/*
 
-ADD . ${SRC_DIR}
+ADD setup.py README.rst HISTORY.rst ${SRC_DIR}/
 RUN pip install --no-cache-dir -e ${SRC_DIR}
+
+ADD . ${SRC_DIR}
 
 # NB: Prevents docker from creating __pycache__ directories that are owned by root
 ENV PYTHONDONTWRITEBYTECODE=true
