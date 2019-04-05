@@ -9,10 +9,6 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
-ADD requirements*.txt ${SRC_DIR}/
-RUN pip install --no-cache-dir -r requirements_dev_edit.txt
-
-
 ADD . ${SRC_DIR}
 RUN pip install --no-cache-dir -e ${SRC_DIR}
 
