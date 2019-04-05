@@ -127,7 +127,7 @@ $ docker run -v "/tmp/deep_release_notes_data:/data" -v "$HOME/.github:/github_c
 
 And then clone repositories that contain release notes::
 
-$ docker run -v "/tmp/deep_release_notes_data:/data" -v "$HOME/.github:/github_conf" -it deep_release_notes -v clone-found-repos
+$ docker run -v "/tmp/deep_release_notes_data:/data" -it deep_release_notes -v clone-found-repos
 
 
 Deploying
