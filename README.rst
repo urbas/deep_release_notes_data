@@ -30,7 +30,7 @@ Deep release notes helps you manage release notes for your project.
 Features
 --------
 
-* TODO: Get all merge commits for all release notes.
+* TODO: Get all commits for all release notes.
 
 Credits
 -------

@@ -35,7 +35,7 @@ setup(
     ],
     description="Deep release notes helps you manage release notes for your project.",
     entry_points={
-        "console_scripts": ["deep_release_notes=deep_release_notes.cli:main"]
+        "console_scripts": ["deep-release-notes=deep_release_notes.cli:main"]
     },
     install_requires=requirements,
     license="MIT license",

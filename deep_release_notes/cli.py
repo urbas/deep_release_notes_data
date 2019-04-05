@@ -5,6 +5,7 @@ import click
 from datetime import datetime
 import json
 import logging
+from os import environ
 from pathlib import Path
 import re
 import requests
@@ -28,8 +29,8 @@ def main(verbose, quiet):
 
 
 @main.command(name="clone-found-repos")
-@click.argument("search_dir")
-@click.argument("clone_dir")
+@click.option("--search-dir", default=environ.get("DRN_SEARCH_OUTPUT_DIR"))
+@click.option("--clone-dir", default=environ.get("DRN_REPOS_OUTPUT_DIR"))
 def clone_found_repos(search_dir, clone_dir):
     clone_path = Path(clone_dir)
     clone_path.mkdir(parents=True, exist_ok=True)
@@ -41,14 +42,16 @@ def clone_found_repos(search_dir, clone_dir):
         logging.info("Cloning repository %s...", repo)
         repo_path.mkdir(parents=True, exist_ok=True)
         check_call(
-            ["git", "clone", f"git@github.com:{repo}.git", repo_path], cwd=clone_path
+            ["git", "clone", f"https://github.com/{repo}.git", repo_path], cwd=clone_path
         )
         logging.info("Repo %s cloned into %s.", repo, repo_path)
 
 
 @main.command(name="find-all")
 @click.option("--size", default=6000)
-def find_all(size):
+@click.option("--output-dir", default=environ.get("DRN_SEARCH_OUTPUT_DIR"))
+@click.option("--search-id", default=datetime.today().strftime("%Y-%m-%d"))
+def find_all(size, output_dir, search_id):
     all_search_criteria = [
         {"file_title": "RELEASENOTES", "extension": "md"},
         {"file_title": "RELEASE_NOTES", "extension": "md"},
@@ -66,6 +69,8 @@ def find_all(size):
             file_title=search_criterion["file_title"],
             extension=search_criterion["extension"],
             size=size,
+            output_dir=output_dir,
+            search_id=search_id,
         )
 
 
@@ -82,9 +87,10 @@ def get_found_release_notes(dir=None):
     return release_note_repos
 
 
-def find_release_notes(file_title, extension, size, output_dir=None):
+def find_release_notes(file_title, extension, size, output_dir, search_id):
     file_name = f"{file_title}.{extension}"
-    out_dir = Path(output_dir) if output_dir else Path(f"{file_name}.size_{size}")
+    base_out_dir = Path(output_dir) if output_dir else Path()
+    out_dir = base_out_dir.joinpath(search_id, f"{file_name}.size_{size}")
     out_dir.mkdir(parents=True, exist_ok=True)
     logging.info(
         "Looking for repositories with %s of size > %s. Storing results into %s.",
@@ -177,9 +183,14 @@ def wait_if_close_to_rate_limit(response, closeness_ratio):
 
 
 def get_github_session():
+    github_conf_dir_env = environ.get("GITHUB_CONF_DIR")
+    if github_conf_dir_env is None:
+        github_conf_dir = Path.home().joinpath(".github")
+    else:
+        github_conf_dir = Path(github_conf_dir_env)
     session = requests.Session()
     session.auth = tuple(
-        Path.home().joinpath(".github", "access_token").read_text().splitlines()
+        github_conf_dir.joinpath("access_token").read_text().splitlines()
     )
     return session
 

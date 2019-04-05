@@ -114,6 +114,22 @@ To run a subset of tests::
 $ py.test tests.test_deep_release_notes
 
 
+Repeatable development environment
+----------------------------------
+
+You can start a repeatable development environment with docker. Simply invoke this::
+
+$ docker build -t deep_release_notes --build-arg=PYTHON_VERSION=$(< .python-version) .
+
+Now you can search for release notes on GitHub::
+
+$ docker run -v "/tmp/deep_release_notes_data:/data" -v "$HOME/.github:/github_conf" -it deep_release_notes -v find-all --size=10000
+
+And then clone repositories that contain release notes::
+
+$ docker run -v "/tmp/deep_release_notes_data:/data" -v "$HOME/.github:/github_conf" -it deep_release_notes -v clone-found-repos
+
+
 Deploying
 ---------
 

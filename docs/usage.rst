@@ -8,7 +8,7 @@ To use Deep release notes in a project::
 
 To download a list of release notes::
 
-    deep_release_notes find-all
+    deep-release-notes find-all
 
 List all repository names and the paths to their release notes::
 
