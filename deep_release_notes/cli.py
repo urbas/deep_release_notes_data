@@ -9,7 +9,7 @@ from os import environ
 from pathlib import Path
 import re
 import requests
-from subprocess import check_call
+from subprocess import check_call, CalledProcessError
 import sys
 from time import sleep
 
@@ -41,10 +41,15 @@ def clone_found_repos(search_dir, clone_dir):
             continue
         logging.info("Cloning repository %s...", repo)
         repo_path.mkdir(parents=True, exist_ok=True)
-        check_call(
-            ["git", "clone", f"https://github.com/{repo}.git", repo_path], cwd=clone_path
-        )
-        logging.info("Repo %s cloned into %s.", repo, repo_path)
+        try:
+            check_call(
+                ["git", "clone", f"https://github.com/{repo}.git", repo_path],
+                cwd=clone_path,
+                env={"GIT_TERMINAL_PROMPT": "0"},
+            )
+            logging.info("Repo %s cloned into %s.", repo, repo_path)
+        except CalledProcessError as _:
+            logging.exception("Could not clone repo %s.", repo)
 
 
 @main.command(name="find-all")
