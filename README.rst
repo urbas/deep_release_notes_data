@@ -9,11 +9,6 @@ Deep release notes
 .. image:: https://img.shields.io/travis/urbas/deep_release_notes_data.svg
         :target: https://travis-ci.org/urbas/deep_release_notes_data
 
-.. image:: https://readthedocs.org/projects/deep-release-notes-data/badge/?version=latest
-        :target: https://deep-release-notes-data.readthedocs.io/en/latest/?badge=latest
-        :alt: Documentation Status
-
-
 .. image:: https://pyup.io/repos/github/urbas/deep_release_notes_data/shield.svg
      :target: https://pyup.io/repos/github/urbas/deep_release_notes_data/
      :alt: Updates
@@ -24,7 +19,6 @@ Deep release notes helps you manage release notes for your project.
 
 
 * Free software: MIT license
-* Documentation: https://deep-release-notes-data.readthedocs.io.
 
 
 Features
