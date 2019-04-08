@@ -22,5 +22,5 @@ ENV GITHUB_CONF_DIR=/github_conf
 ENV DRN_SEARCH_OUTPUT_DIR=/data/search
 ENV DRN_REPOS_OUTPUT_DIR=/data/repos
 
-ENTRYPOINT [ "deep-release-notes" ]
-CMD deep-release-notes --help
+ENTRYPOINT [ "deep-release-notes-data" ]
+CMD deep-release-notes-data --help

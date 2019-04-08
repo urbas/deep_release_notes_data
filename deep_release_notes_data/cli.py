@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""Console script for deep_release_notes."""
+"""Console script for deep_release_notes_data."""
 import click
 from datetime import datetime
 import json

@@ -15,7 +15,7 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/urbas/deep_release_notes/issues.
+Report bugs at https://github.com/urbas/deep_release_notes_data/issues.
 
 If you are reporting a bug, please include:
 
@@ -45,7 +45,7 @@ articles, and such.
 Submit Feedback
 ~~~~~~~~~~~~~~~
 
-The best way to send feedback is to file an issue at https://github.com/urbas/deep_release_notes/issues.
+The best way to send feedback is to file an issue at https://github.com/urbas/deep_release_notes_data/issues.
 
 If you are proposing a feature:
 
@@ -57,17 +57,17 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up `deep_release_notes` for local development.
+Ready to contribute? Here's how to set up `deep_release_notes_data` for local development.
 
-1. Fork the `deep_release_notes` repo on GitHub.
+1. Fork the `deep_release_notes_data` repo on GitHub.
 2. Clone your fork locally::
 
-    $ git clone git@github.com:your_name_here/deep_release_notes.git
+    $ git clone git@github.com:your_name_here/deep_release_notes_data.git
 
 3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
 
-    $ mkvirtualenv deep_release_notes
-    $ cd deep_release_notes/
+    $ mkvirtualenv deep_release_notes_data
+    $ cd deep_release_notes_data/
     $ python setup.py develop
 
 4. Create a branch for local development::
@@ -79,7 +79,7 @@ Ready to contribute? Here's how to set up `deep_release_notes` for local develop
 5. When you're done making changes, check that your changes pass flake8 and the
    tests, including testing other Python versions with tox::
 
-    $ flake8 deep_release_notes tests
+    $ flake8 deep_release_notes_data tests
     $ python setup.py test or py.test
     $ tox
 
@@ -103,7 +103,7 @@ Before you submit a pull request, check that it meets these guidelines:
    your new functionality into a function with a docstring, and add the
    feature to the list in README.rst.
 3. The pull request should work for Python 2.7, 3.4, 3.5 and 3.6, and for PyPy. Check
-   https://travis-ci.org/urbas/deep_release_notes/pull_requests
+   https://travis-ci.org/urbas/deep_release_notes_data/pull_requests
    and make sure that the tests pass for all supported Python versions.
 
 Tips
@@ -111,7 +111,7 @@ Tips
 
 To run a subset of tests::
 
-$ py.test tests.test_deep_release_notes
+$ py.test tests.test_deep_release_notes_data
 
 
 Repeatable development environment
@@ -119,15 +119,15 @@ Repeatable development environment
 
 You can start a repeatable development environment with docker. Simply invoke this::
 
-$ docker build -t deep_release_notes --build-arg=PYTHON_VERSION=$(< .python-version) .
+$ docker build -t deep_release_notes_data --build-arg=PYTHON_VERSION=$(< .python-version) .
 
 Now you can search for release notes on GitHub::
 
-$ docker run -v "/tmp/deep_release_notes_data:/data" -v "$HOME/.github:/github_conf" -it deep_release_notes -v find-all --size=10000
+$ docker run -v "/tmp/deep_release_notes_data:/data" -v "$HOME/.github:/github_conf" -it deep_release_notes_data -v find-all --size=10000
 
 And then clone repositories that contain release notes::
 
-$ docker run -v "/tmp/deep_release_notes_data:/data" -it deep_release_notes -v clone-found-repos
+$ docker run -v "/tmp/deep_release_notes_data:/data" -it deep_release_notes_data -v clone-found-repos
 
 
 Deploying

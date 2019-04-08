@@ -12,7 +12,7 @@ To install Deep release notes, run this command in your terminal:
 
 .. code-block:: console
 
-    $ pip install deep_release_notes
+    $ pip install deep_release_notes_data
 
 This is the preferred method to install Deep release notes, as it will always install the most recent stable release.
 
@@ -32,13 +32,13 @@ You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/urbas/deep_release_notes
+    $ git clone git://github.com/urbas/deep_release_notes_data
 
 Or download the `tarball`_:
 
 .. code-block:: console
 
-    $ curl  -OL https://github.com/urbas/deep_release_notes/tarball/master
+    $ curl  -OL https://github.com/urbas/deep_release_notes_data/tarball/master
 
 Once you have a copy of the source, you can install it with:
 
@@ -47,5 +47,5 @@ Once you have a copy of the source, you can install it with:
     $ python setup.py install
 
 
-.. _Github repo: https://github.com/urbas/deep_release_notes
-.. _tarball: https://github.com/urbas/deep_release_notes/tarball/master
+.. _Github repo: https://github.com/urbas/deep_release_notes_data
+.. _tarball: https://github.com/urbas/deep_release_notes_data/tarball/master

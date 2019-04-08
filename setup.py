@@ -35,19 +35,19 @@ setup(
     ],
     description="Deep release notes helps you manage release notes for your project.",
     entry_points={
-        "console_scripts": ["deep-release-notes=deep_release_notes.cli:main"]
+        "console_scripts": ["deep-release-notes-data=deep_release_notes_data.cli:main"]
     },
     install_requires=requirements,
     license="MIT license",
     long_description=readme + "\n\n" + history,
     include_package_data=True,
-    keywords="deep_release_notes",
-    name="deep_release_notes",
-    packages=find_packages(include=["deep_release_notes"]),
+    keywords="deep_release_notes_data",
+    name="deep_release_notes_data",
+    packages=find_packages(include=["deep_release_notes_data"]),
     setup_requires=setup_requirements,
     test_suite="tests",
     tests_require=test_requirements,
-    url="https://github.com/urbas/deep_release_notes",
+    url="https://github.com/urbas/deep_release_notes_data",
     version="0.0.1",
     zip_safe=False,
 )

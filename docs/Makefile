@@ -4,7 +4,7 @@
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = python -msphinx
-SPHINXPROJ    = deep_release_notes
+SPHINXPROJ    = deep_release_notes_data
 SOURCEDIR     = .
 BUILDDIR      = _build
 

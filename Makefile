@@ -51,10 +51,10 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr .pytest_cache
 
 fmt: ## formats code with black
-	black deep_release_notes tests setup.py
+	black deep_release_notes_data tests setup.py
 
 lint: ## check style with flake8
-	flake8 deep_release_notes tests
+	flake8 deep_release_notes_data tests
 
 test: ## run tests quickly with the default Python
 	py.test
@@ -63,15 +63,15 @@ test-all: ## run tests on every Python version with tox
 	tox
 
 coverage: ## check code coverage quickly with the default Python
-	coverage run --source deep_release_notes -m pytest
+	coverage run --source deep_release_notes_data -m pytest
 	coverage report -m
 	coverage html
 	$(BROWSER) htmlcov/index.html
 
 docs: ## generate Sphinx HTML documentation, including API docs
-	rm -f docs/deep_release_notes.rst
+	rm -f docs/deep_release_notes_data.rst
 	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ deep_release_notes
+	sphinx-apidoc -o docs/ deep_release_notes_data
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 	$(BROWSER) docs/_build/html/index.html

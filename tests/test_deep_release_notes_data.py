@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Tests for `deep_release_notes` package."""
+"""Tests for `deep_release_notes_data` package."""
 from datetime import datetime
 
-from deep_release_notes.cli import (
+from deep_release_notes_data.cli import (
     get_next_page,
     find_last_downloaded_page,
     get_request_pause,

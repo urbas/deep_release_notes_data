@@ -9,7 +9,7 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=.
 set BUILDDIR=_build
-set SPHINXPROJ=deep_release_notes
+set SPHINXPROJ=deep_release_notes_data
 
 if "%1" == "" goto help
 
